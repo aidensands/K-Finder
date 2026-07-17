@@ -10,14 +10,15 @@ from collections import Counter
 logger = logging.getLogger(__name__)
 
 def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
-    """
-    Finds the optimal combination between model inertia and silhoutte score to pick a best k
-    inputs:
-        k_range: The highest k value to test starting from 2
-        data: The data you are clustering on, the original feature matrix
-        diagnostic_panel: If true, this method will save to the working directory a plot of model metrics
-    outputs:
-        k: a single, most optimal k value to use for clustering 
+    """Finds the optimal set of k values using an ensemble of clustering metrics.
+
+    Args:
+        data (array-like of shape (n_samples, n_features)): 
+            The input data matrix to cluster. Must be 2D, strictly numeric 
+            (int/float), free of NaN/inf values, and ideally scaled using 
+            StandardScaler or MinMaxScaler.
+        min_k (int, optional): The minimum cluster count to test. Defaults to 2.
+        max_k (int, optional): The maximum cluster count to test. Defaults to 10.
     """
     
     if max_k <= 2:
@@ -68,7 +69,7 @@ def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
     optimal_c_k = np.argmax(calinskis) + 2
     optimal_d_k = np.argmin(davies) + 2
     
-    opt = Counter([optimal_inertia_k, optimal_silhoutte_k, optimal_c_k, optimal_d_k]).most_common()
+    opt = set([int(optimal_inertia_k), int(optimal_silhoutte_k), int(optimal_c_k), int(optimal_d_k)])
     print(f'K-Finder has selected the set of k={opt} as valid k-values. Output and inspect the graph for finer details')
     return opt
 
