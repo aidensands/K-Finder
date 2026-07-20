@@ -85,7 +85,7 @@ def optimize_k(data:NDArray, max_k:int = 10, diagnostic_panel:bool = True) -> se
 def produce_dummy_set():
     X, y = make_blobs(
         n_samples=1000,
-        centers=5
+        centers=6
     )
     plt.scatter(X[:, 0], X[:, 1], c=y)
     plt.savefig('centroids.png')
