@@ -9,7 +9,7 @@ from collections import Counter
 
 logger = logging.getLogger(__name__)
 
-def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
+def optimize_k(data:NDArray, max_k:int = 10, diagnostic_panel:bool = True) -> set[int]:
     """Finds the optimal set of k values using an ensemble of clustering metrics.
 
     Args:
@@ -17,8 +17,8 @@ def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
             The input data matrix to cluster. Must be 2D, strictly numeric 
             (int/float), free of NaN/inf values, and ideally scaled using 
             StandardScaler or MinMaxScaler.
-        min_k (int, optional): The minimum cluster count to test. Defaults to 2.
         max_k (int, optional): The maximum cluster count to test. Defaults to 10.
+        diagnostic_panel (boolean, optional): Controls whether or not to output the metrics as a graph, defaults to true
     """
     
     if max_k <= 2:
@@ -34,6 +34,7 @@ def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
         logger.debug(f'Attempting to cluster using k={k}')
         model = KMeans(
             n_clusters=k,
+            n_init=10
         )
         labels = model.fit_predict(data)
         s_score = silhouette_score(data, labels)
@@ -48,8 +49,14 @@ def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
     davies = np.array(davies)
     calinskis = np.array(calinskis)
     inertias = np.array(inertias)
-    velocities = np.diff(inertias)
-    accelerations = np.diff(velocities)
+
+    normed_ks = (ks - ks[0]) / (ks[-1] - ks[0])
+    normed_inertias = (inertias - inertias.min()) / (inertias.max() - inertias.min())
+    points = np.column_stack([normed_ks, normed_inertias])
+    p1, p2 = points[0], points[-1]
+    line = p2 - p1
+    distances = (line[0] * (p1 - points)[:, 1]) - (line[1] * (p1 - points)[:, 0]) / np.linalg.norm(line)
+    distances = np.abs(distances)
 
     if diagnostic_panel:
         fig, ax = plt.subplots(2, 2, figsize=(12,8))
@@ -64,19 +71,21 @@ def optimize_k(max_k:int, data:NDArray, diagnostic_panel:bool):
 
         plt.savefig('kfinder_metrics.png')
 
-    optimal_inertia_k = np.argmax(accelerations) + 3
+    optimal_inertia_k = np.argmax(distances) + 2
     optimal_silhoutte_k = np.argmax(silhouette_scores) + 2
     optimal_c_k = np.argmax(calinskis) + 2
     optimal_d_k = np.argmin(davies) + 2
     
+    votes = Counter([optimal_inertia_k, optimal_silhoutte_k, optimal_d_k, optimal_c_k])
     opt = set([int(optimal_inertia_k), int(optimal_silhoutte_k), int(optimal_c_k), int(optimal_d_k)])
-    print(f'K-Finder has selected the set of k={opt} as valid k-values. Output and inspect the graph for finer details')
+    print(f'K-Finder has selected the set of k={opt} as valid k-values with the following votes')
+    print(votes.most_common())
     return opt
 
 def produce_dummy_set():
     X, y = make_blobs(
         n_samples=1000,
-        centers=4
+        centers=5
     )
     plt.scatter(X[:, 0], X[:, 1], c=y)
     plt.savefig('centroids.png')
@@ -84,7 +93,7 @@ def produce_dummy_set():
 
 def main():
     data, labels = produce_dummy_set()
-    optimize_k(8, data, True)
+    optimize_k(data, 8, True)
 
 if __name__ == '__main__':
     main()
