@@ -20,7 +20,10 @@ b(i)= \text{The mean distance between point} i \text{and all points in the neare
 $$
 
 ### Davies-Bouldin Score
+This is a measure of how tight clusters are grouped and how far separated they are from other neighboring clusters
+
 ### Calinski-Harabasz Score
+Measures the ratio of point dispersion between clusters and within clusters. Producing a highly accurate measure of cluster separation
 
 ## Usage
 Simply import the method into your codespace and use the method as directed in the docstring. The only constraint is that your data is expected to be as an array like of (n_samples, n_features). 
