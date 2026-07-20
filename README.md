@@ -4,16 +4,21 @@ An algorithm for finding optimal k values for clustering in unsupervised machine
 The algorithm selects the k value corresponding with the elbow of the curve, the implementation of which I got the idea from the kneedle algorithm. It uses geometric distance to detect the point at which the elbow occurs.
 ### Silhouette Score:
 A metric which shows how similar a point is to its own cluster compared to others, defined as:
+
 $$
 s(i) = \frac{b(i) - a(i)}{max(a(i), b(i))}
 $$
+
 where:
+
 $$
 a(i) = \text{Mean distance between point } i \text{and all other points}
 $$
+
 $$
 b(i)= \text{The mean distance between point} i \text{and all points in the nearest neighboring cluster}
 $$
+
 ### Davies-Bouldin Score
 ### Calinski-Harabasz Score
 
